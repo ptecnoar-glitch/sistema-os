@@ -1232,7 +1232,7 @@ body.theme-light .exec-card strong{color:#111827!important;}
 <section id="loginPage" class="login">
   <div class="login-card">
     <h2>Sistema de OS</h2>
-    <p>Controle de ordens de serviço, apontamento em tempo real com suporte a múltiplos técnicos.</p>
+    <p>Controle de ordens de serviço, apontamento em tempo real com suporte a múltiplos técnicos. <br><small style="color:var(--primary);font-weight:800">Versão: QR Code real + Fotos + Dashboard Executivo</small></p>
     <div class="theme-control-row" style="margin-bottom:16px">
       <select class="theme-select" id="themeModeLogin" onchange="setTemaModo(this.value)">
         <option value="dark">🌙 Escuro</option>
@@ -1301,6 +1301,11 @@ body.theme-light .exec-card strong{color:#111827!important;}
       <div class="kpi"><span>Horas Totais</span><strong id="kpiHoras">00:00</strong></div>
     </div>
     <div id="executiveDashboard"></div>
+    <div class="card" style="margin-top:20px;border-color:rgba(56,189,248,.35)">
+      <h2>📊 Dashboard Executivo</h2>
+      <p class="sub">Indicadores gerenciais de custo, atraso, retrabalho e ranking. Atualiza automaticamente com o Firestore.</p>
+      <div id="dashboardExecutivo"></div>
+    </div>
     <div class="card" style="margin-top:20px">
       <h2>Ordens de Serviço Recentes</h2>
       <div id="dashboardList"></div>
@@ -1389,13 +1394,13 @@ body.theme-light .exec-card strong{color:#111827!important;}
   <section id="viewQrcode" class="hidden">
     <div class="card premium-card">
       <h2>QR Code das Ordens de Serviço</h2>
-      <p class="sub">Gere um QR Code real para abrir a OS pelo link online. Quem escanear precisará fazer login para acessar, mantendo o sistema fechado.</p>
+      <p class="sub">Gere um QR Code real para abrir a OS pelo link online. <b>Esta versão usa o link atual publicado no GitHub Pages.</b> Quem escanear precisará fazer login para acessar, mantendo o sistema fechado.</p>
       <div class="premium-filter-grid no-print">
         <div class="field" style="margin:0"><label>Cliente</label><select id="qrFiltroCliente" onchange="renderQRCode()"></select></div>
         <div class="field" style="margin:0"><label>Técnico / Ajudante</label><select id="qrFiltroTecnico" onchange="renderQRCode()"></select></div>
         <div class="field" style="margin:0"><label>Status</label><select id="qrFiltroStatus" onchange="renderQRCode()"><option value="">Todos</option><option>Aberta</option><option>Em andamento</option><option>Pausada</option><option>Finalizada</option></select></div>
         <div class="field" style="margin:0"><label>Selecionar OS</label><select id="qrSelect" onchange="renderQRCode()"></select></div>
-        <div class="field" style="margin:0"><label>&nbsp;</label><div class="buttons" style="margin-top:0"><button class="btn-primary" onclick="renderQRCode()">Gerar</button><button class="btn-light" onclick="baixarQRCode()">Baixar PNG</button><button class="btn-success" onclick="copiarLinkQRCode()">Copiar Link</button></div></div>
+        <div class="field" style="margin:0"><label>&nbsp;</label><div class="buttons" style="margin-top:0"><button class="btn-primary" onclick="renderQRCode()">Gerar</button><button class="btn-light" onclick="baixarQRCode()">Baixar PNG</button><button class="btn-success" onclick="copiarLinkQRCode()">Copiar Link da OS</button><button class="btn-success" onclick="copiarLinkQRCode()">Copiar Link</button></div></div>
       </div>
       <div class="qr-layout">
         <div><canvas id="qrCanvas" width="260" height="260"></canvas></div>
@@ -1454,7 +1459,7 @@ body.theme-light .exec-card strong{color:#111827!important;}
         <label>Relato de Fechamento do Técnico</label>
         <textarea id="relatoTecnico" class="close-note" placeholder="Insira aqui o diagnóstico, ações tomadas, peças utilizadas ou pendências mapeadas antes de finalizar permanentemente a OS..."></textarea>
       </div>
-      <div id="fotoOSOperacional" class="foto-os-box hidden">
+      <div id="fotoOSOperacional" class="foto-os-box hidden" data-recurso="upload-fotos-real">
         <div class="foto-os-head">
           <div><b>Fotos da OS</b><div class="hint" style="margin-top:3px">Somente fotos. O sistema comprime antes de salvar para não pesar.</div></div>
           <label class="btn-light mini" style="margin:0;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--text)">Adicionar fotos<input id="fotoInputOS" type="file" accept="image/*" multiple style="display:none" onchange="adicionarFotosOSSelecionada(this.files)"></label>
@@ -3149,6 +3154,7 @@ function renderDashboard(){
   $('kpiFinalizadas').innerText=finalizadas;
   $('kpiRetrabalhos').innerText=reworks;
   $('kpiHoras').innerText=fmtMin(totalSec);
+  if(typeof renderDashboardExecutivo === 'function') renderDashboardExecutivo();
   renderExecutiveDashboard();
   
   let rec = ordensVisiveis.slice().sort((a,b)=>b.idNum - a.idNum).slice(0,5);
