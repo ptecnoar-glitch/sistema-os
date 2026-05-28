@@ -1200,6 +1200,31 @@ body.auth-checking #loginPage, body.auth-checking #appPage { display:none !impor
 body.auth-checking::before { content:'Carregando sessão...'; position:fixed; inset:0; display:grid; place-items:center; background:radial-gradient(circle at center,#1e293b 0%,#0f172a 100%); color:#f3f4f6; font-weight:800; z-index:999999; }
 .sync-pill{font-size:11px;color:var(--muted);}
 
+
+/* V4.50 - QR real, fotos comprimidas e dashboard executivo */
+.exec-dashboard-grid{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:14px;margin:20px 0;}
+.exec-card{background:linear-gradient(180deg,var(--card),#0b0f19);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow);}
+.exec-card small{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;}
+.exec-card strong{display:block;font-size:24px;font-weight:900;color:#fff;}
+.exec-card span{display:block;margin-top:6px;font-size:12px;color:var(--muted);}
+.exec-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.exec-panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;}
+.exec-list{display:grid;gap:9px;margin-top:10px;}
+.exec-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);background:#0b0f19;border-radius:12px;}
+.exec-row b{font-size:13px}.exec-row small{display:block;color:var(--muted);margin-top:3px}.exec-row strong{color:var(--primary);font-size:13px;white-space:nowrap;}
+.foto-os-box{border:1px solid var(--line);background:#0b0f19;border-radius:14px;padding:14px;margin:14px 0;}
+.foto-os-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:12px;}
+.foto-card{border:1px solid var(--line);border-radius:12px;background:var(--card);overflow:hidden;}
+.foto-card img{width:100%;height:110px;object-fit:cover;display:block;background:#111827;}
+.foto-card-body{padding:9px;font-size:11px;color:var(--muted);display:grid;gap:6px;}
+.foto-card-body b{color:var(--text);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qr-link-box{word-break:break-all;background:#0b0f19;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px;}
+body.theme-light .exec-card,body.theme-light .exec-panel,body.theme-light .exec-row,body.theme-light .foto-os-box,body.theme-light .foto-card,body.theme-light .qr-link-box{background:#fff!important;border-color:var(--line)!important;color:var(--text)!important;}
+body.theme-light .exec-card strong{color:#111827!important;}
+@media(max-width:1000px){.exec-dashboard-grid{grid-template-columns:repeat(2,1fr)}.exec-grid-2{grid-template-columns:1fr}}
+@media(max-width:620px){.exec-dashboard-grid{grid-template-columns:1fr}.foto-grid{grid-template-columns:repeat(2,1fr)}}
+
 </style>
 </head>
 <body class="auth-checking">
@@ -1275,6 +1300,7 @@ body.auth-checking::before { content:'Carregando sessão...'; position:fixed; in
       <div class="kpi"><span>Em Retrabalho</span><strong id="kpiRetrabalhos" style="color: #f59e0b;">0</strong></div>
       <div class="kpi"><span>Horas Totais</span><strong id="kpiHoras">00:00</strong></div>
     </div>
+    <div id="executiveDashboard"></div>
     <div class="card" style="margin-top:20px">
       <h2>Ordens de Serviço Recentes</h2>
       <div id="dashboardList"></div>
@@ -1363,13 +1389,13 @@ body.auth-checking::before { content:'Carregando sessão...'; position:fixed; in
   <section id="viewQrcode" class="hidden">
     <div class="card premium-card">
       <h2>QR Code das Ordens de Serviço</h2>
-      <p class="sub">Gere um QR Code visual para identificar a OS, anexar em PDF ou colar na máquina/equipamento. Nesta versão local, o QR representa os dados da OS no próprio navegador.</p>
+      <p class="sub">Gere um QR Code real para abrir a OS pelo link online. Quem escanear precisará fazer login para acessar, mantendo o sistema fechado.</p>
       <div class="premium-filter-grid no-print">
         <div class="field" style="margin:0"><label>Cliente</label><select id="qrFiltroCliente" onchange="renderQRCode()"></select></div>
         <div class="field" style="margin:0"><label>Técnico / Ajudante</label><select id="qrFiltroTecnico" onchange="renderQRCode()"></select></div>
         <div class="field" style="margin:0"><label>Status</label><select id="qrFiltroStatus" onchange="renderQRCode()"><option value="">Todos</option><option>Aberta</option><option>Em andamento</option><option>Pausada</option><option>Finalizada</option></select></div>
         <div class="field" style="margin:0"><label>Selecionar OS</label><select id="qrSelect" onchange="renderQRCode()"></select></div>
-        <div class="field" style="margin:0"><label>&nbsp;</label><div class="buttons" style="margin-top:0"><button class="btn-primary" onclick="renderQRCode()">Gerar</button><button class="btn-light" onclick="baixarQRCode()">Baixar PNG</button></div></div>
+        <div class="field" style="margin:0"><label>&nbsp;</label><div class="buttons" style="margin-top:0"><button class="btn-primary" onclick="renderQRCode()">Gerar</button><button class="btn-light" onclick="baixarQRCode()">Baixar PNG</button><button class="btn-success" onclick="copiarLinkQRCode()">Copiar Link</button></div></div>
       </div>
       <div class="qr-layout">
         <div><canvas id="qrCanvas" width="260" height="260"></canvas></div>
@@ -1427,6 +1453,13 @@ body.auth-checking::before { content:'Carregando sessão...'; position:fixed; in
       <div id="containerRelatoTecnico" class="field" style="margin-top: 12px;">
         <label>Relato de Fechamento do Técnico</label>
         <textarea id="relatoTecnico" class="close-note" placeholder="Insira aqui o diagnóstico, ações tomadas, peças utilizadas ou pendências mapeadas antes de finalizar permanentemente a OS..."></textarea>
+      </div>
+      <div id="fotoOSOperacional" class="foto-os-box hidden">
+        <div class="foto-os-head">
+          <div><b>Fotos da OS</b><div class="hint" style="margin-top:3px">Somente fotos. O sistema comprime antes de salvar para não pesar.</div></div>
+          <label class="btn-light mini" style="margin:0;cursor:pointer;text-transform:none;letter-spacing:0;color:var(--text)">Adicionar fotos<input id="fotoInputOS" type="file" accept="image/*" multiple style="display:none" onchange="adicionarFotosOSSelecionada(this.files)"></label>
+        </div>
+        <div id="fotosOSAtiva" class="foto-grid"></div>
       </div>
       <div class="buttons">
         <button class="btn-success" id="btnStart" onclick="iniciar()">Iniciar Cronômetro</button>
@@ -1684,6 +1717,7 @@ body.auth-checking::before { content:'Carregando sessão...'; position:fixed; in
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <script>
 
@@ -2484,6 +2518,7 @@ function setSession(user){
     localStorage.removeItem('os_current_selected');
   }
   showView(savedTab);
+  setTimeout(()=>processarDeepLinkOS(),500);
   iniciarSyncFirestoreTempoReal();
 }
 
@@ -2670,6 +2705,7 @@ function carregarOSSelecionada(){
     localStorage.removeItem('os_current_selected');
     currentOSId=null;
     $('cardApontamento').classList.remove('os-retrabalho-card');
+    renderFotosOSAtiva();
     atualizarBotoesTimer();
     return;
   }
@@ -2684,6 +2720,7 @@ function carregarOSSelecionada(){
     $('timer').innerText='00:00:00';
     $('statusTimer').innerText='Aguardando seleção de OS';
     $('cardApontamento').classList.remove('os-retrabalho-card');
+    renderFotosOSAtiva();
     atualizarBotoesTimer();
     return;
   }
@@ -2703,6 +2740,7 @@ function carregarOSSelecionada(){
   }
 
   renderListaAjudantesAtivos(os);
+  renderFotosOSAtiva();
   atualizarBotoesTimer();
   
   if(os.status==='Em andamento'){
@@ -3111,6 +3149,7 @@ function renderDashboard(){
   $('kpiFinalizadas').innerText=finalizadas;
   $('kpiRetrabalhos').innerText=reworks;
   $('kpiHoras').innerText=fmtMin(totalSec);
+  renderExecutiveDashboard();
   
   let rec = ordensVisiveis.slice().sort((a,b)=>b.idNum - a.idNum).slice(0,5);
   if(!rec.length){
@@ -3231,6 +3270,10 @@ function abrirDetalhes(id){
           
   h+=`  </tbody>
       </table>
+    </div>
+    <div class="foto-os-box">
+      <div class="foto-os-head"><div><h3 style="margin:0">Fotos anexadas</h3><div class="hint" style="margin-top:4px">Admin pode baixar ou excluir. Técnicos podem baixar para consulta.</div></div></div>
+      <div class="foto-grid">${renderFotosGrid(os, isAdm)}</div>
     </div>
     
     <h3>Trilha Auditável de Eventos</h3>
@@ -4282,6 +4325,124 @@ function renderTimeline(){
   $('timelineConteudo').innerHTML=head+`<div class="timeline">${body}</div>`;
 }
 function hashString(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24); } return h>>>0; }
+function getBaseUrlSistema(){
+  return window.location.origin + window.location.pathname;
+}
+function getOSLink(osId){
+  return getBaseUrlSistema() + '?os=' + encodeURIComponent(osId);
+}
+function getQueryOSId(){
+  try{return new URLSearchParams(window.location.search).get('os') || '';}catch(e){return '';}
+}
+function processarDeepLinkOS(){
+  const osId=getQueryOSId();
+  if(!osId || !currentUser) return false;
+  const os=state.orders.find(o=>String(o.id)===String(osId));
+  if(os){
+    showView('os');
+    setTimeout(()=>abrirDetalhes(osId),250);
+    return true;
+  }
+  return false;
+}
+function fotosOS(os){ return Array.isArray(os?.fotos) ? os.fotos : []; }
+async function comprimirImagemArquivo(file, maxDim=1280, quality=0.68){
+  if(!file || !file.type || !file.type.startsWith('image/')) throw new Error('Arquivo não é imagem.');
+  const dataUrl=await new Promise((resolve,reject)=>{const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file);});
+  const img=await new Promise((resolve,reject)=>{const im=new Image(); im.onload=()=>resolve(im); im.onerror=reject; im.src=dataUrl;});
+  let w=img.width,h=img.height;
+  const scale=Math.min(1, maxDim/Math.max(w,h));
+  w=Math.max(1,Math.round(w*scale)); h=Math.max(1,Math.round(h*scale));
+  const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext('2d'); ctx.drawImage(img,0,0,w,h);
+  let q=quality, out=canvas.toDataURL('image/jpeg',q);
+  while(out.length>520000 && q>0.38){ q-=0.08; out=canvas.toDataURL('image/jpeg',q); }
+  return {dataUrl:out, largura:w, altura:h, tamanhoEstimado:Math.round(out.length*0.75), qualidade:Number(q.toFixed(2))};
+}
+async function adicionarFotosOSSelecionada(files){
+  if(!currentOSId){alert('Selecione uma OS antes de adicionar fotos.');return;}
+  const os=state.orders.find(o=>o.id===currentOSId);
+  if(!os) return;
+  const lista=[...(files||[])].filter(f=>f.type.startsWith('image/'));
+  if(!lista.length){alert('Selecione somente arquivos de imagem.');return;}
+  os.fotos=os.fotos||[];
+  try{
+    for(const file of lista.slice(0,8)){
+      const comp=await comprimirImagemArquivo(file);
+      os.fotos.push({id:uid(),nome:file.name||'foto.jpg',autor:currentUser.nome,autorLogin:currentUser.login,data:nowISO(),...comp});
+    }
+    os.logs=os.logs||[];
+    os.logs.push({type:'Fotos',user:currentUser.nome,time:nowISO(),note:`Adicionou ${lista.length} foto(s) na OS.`});
+    save(); renderFotosOSAtiva(); renderAll();
+  }catch(e){ console.error(e); alert('Falha ao comprimir/salvar foto: '+(e.message||e)); }
+  const inp=$('fotoInputOS'); if(inp) inp.value='';
+}
+function renderFotosOSAtiva(){
+  const box=$('fotoOSOperacional'), cont=$('fotosOSAtiva');
+  if(!box || !cont) return;
+  const os=currentOSId ? state.orders.find(o=>o.id===currentOSId) : null;
+  if(!os){box.classList.add('hidden'); cont.innerHTML=''; return;}
+  box.classList.remove('hidden');
+  cont.innerHTML=renderFotosGrid(os, false);
+}
+function renderFotosGrid(os, adminMode=false){
+  const fotos=fotosOS(os);
+  if(!fotos.length) return '<div class="empty" style="grid-column:1/-1;padding:18px">Nenhuma foto anexada nesta OS.</div>';
+  return fotos.map(f=>`<div class="foto-card">
+    <img src="${f.dataUrl}" alt="${escapeHTML(f.nome||'foto')}">
+    <div class="foto-card-body">
+      <b title="${escapeHTML(f.nome||'foto')}">${escapeHTML(f.nome||'foto')}</b>
+      <span>${brDate(f.data)} • ${escapeHTML(f.autor||'-')}</span>
+      <div class="buttons" style="margin:0;gap:6px">
+        <button class="btn-light mini" onclick="baixarFotoOS('${os.id}','${f.id}')">Baixar</button>
+        ${adminMode?`<button class="btn-danger mini" onclick="excluirFotoOS('${os.id}','${f.id}')">Excluir</button>`:''}
+      </div>
+    </div>
+  </div>`).join('');
+}
+function baixarFotoOS(osId,fotoId){
+  const os=state.orders.find(o=>o.id===osId); const f=fotosOS(os).find(x=>x.id===fotoId); if(!f) return;
+  const a=document.createElement('a'); a.href=f.dataUrl; a.download=`${osId}-${(f.nome||'foto.jpg').replace(/[^a-zA-Z0-9._-]/g,'_')}`; a.click();
+}
+function excluirFotoOS(osId,fotoId){
+  if(!currentUser || currentUser.role!=='admin') return;
+  const os=state.orders.find(o=>o.id===osId); if(!os) return;
+  if(!confirm('Excluir esta foto da OS?')) return;
+  os.fotos=(os.fotos||[]).filter(f=>f.id!==fotoId);
+  os.logs=os.logs||[]; os.logs.push({type:'Foto excluída',user:currentUser.nome,time:nowISO(),note:'Administrador excluiu uma foto anexada.'});
+  save(); abrirDetalhes(osId); renderAll();
+}
+function escapeHTML(txt){return String(txt||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function renderExecutiveDashboard(){
+  const el=$('executiveDashboard'); if(!el || !currentUser) return;
+  const list=filtrarOrdensPorPerfil(state.orders||[]);
+  const abertas=list.filter(o=>o.status!=='Finalizada').length;
+  const atrasadas=list.filter(o=>isLate(o)).length;
+  const finalizadas=list.filter(o=>o.status==='Finalizada').length;
+  const total=list.length||1;
+  const horas=list.reduce((a,o)=>a+calcElapsed(o),0);
+  const custo=list.reduce((a,o)=>a+getTotalCostAll(o),0);
+  const retrab=list.filter(o=>o.retrabalho).length;
+  const porTecnico={}; const porCliente={};
+  list.forEach(o=>{
+    const ht=calcElapsed(o)/3600; porTecnico[o.responsavel]=(porTecnico[o.responsavel]||0)+ht;
+    porCliente[o.cliente]=(porCliente[o.cliente]||{horas:0,custo:0,qt:0}); porCliente[o.cliente].horas+=ht; porCliente[o.cliente].custo+=getTotalCostAll(o); porCliente[o.cliente].qt++;
+    (o.ajudantes||[]).forEach(a=>{porTecnico[a.login]=(porTecnico[a.login]||0)+calcAjudanteTotalTime(o,a.login)/3600;});
+  });
+  const techRows=Object.entries(porTecnico).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([login,h])=>`<div class="exec-row"><div><b>${nomeUsuario(login)}</b><small>${h.toFixed(1)} h apontadas</small></div><strong>${fmtSec(h*3600)}</strong></div>`).join('') || '<div class="empty">Sem horas apontadas.</div>';
+  const cliRows=Object.entries(porCliente).sort((a,b)=>b[1].custo-a[1].custo).slice(0,5).map(([cli,v])=>`<div class="exec-row"><div><b>${escapeHTML(cli)}</b><small>${v.qt} OS • ${v.horas.toFixed(1)} h</small></div><strong>${fmtMon(v.custo)}</strong></div>`).join('') || '<div class="empty">Sem clientes.</div>';
+  el.innerHTML=`<div class="exec-dashboard-grid">
+    <div class="exec-card"><small>Custo total</small><strong>${fmtMon(custo)}</strong><span>Base nas OS visíveis</span></div>
+    <div class="exec-card"><small>OS em aberto</small><strong>${abertas}</strong><span>${atrasadas} atrasada(s)</span></div>
+    <div class="exec-card"><small>Finalização</small><strong>${Math.round(finalizadas/total*100)}%</strong><span>${finalizadas} de ${list.length} OS</span></div>
+    <div class="exec-card"><small>Retrabalho</small><strong>${retrab}</strong><span>${Math.round(retrab/total*100)}% das OS</span></div>
+  </div>
+  <div class="exec-grid-2">
+    <div class="exec-panel"><h2>Ranking executivo por técnico</h2><div class="exec-list">${techRows}</div></div>
+    <div class="exec-panel"><h2>Ranking executivo por cliente</h2><div class="exec-list">${cliRows}</div></div>
+  </div>`;
+}
+
 function drawFakeQR(canvas, text){
   let ctx=canvas.getContext('2d'), n=29, size=canvas.width, cell=Math.floor(size/n);
   ctx.fillStyle='#fff'; ctx.fillRect(0,0,size,size);
@@ -4310,16 +4471,22 @@ function renderQRCode(){
   let id=(sel||{}).value;
   let os=state.orders.find(o=>o.id===id) || list[0];
   if(!os){ $('qrInfo').innerHTML='<div class="empty">Nenhuma OS encontrada com os filtros aplicados.</div>'; return; }
-  let payload=`OS:${os.id}|CLIENTE:${os.cliente}|LIDER:${nomeUsuario(os.responsavel)}|STATUS:${os.status}|PRAZO:${os.dataLimite||'-'}`;
-  drawFakeQR($('qrCanvas'), payload);
+  const link=getOSLink(os.id);
+  const canvas=$('qrCanvas');
+  if(window.QRCode && QRCode.toCanvas){
+    QRCode.toCanvas(canvas, link, {width:260,margin:2,errorCorrectionLevel:'M'}, function(err){ if(err){ console.error(err); drawFakeQR(canvas, link); } });
+  } else {
+    drawFakeQR(canvas, link);
+  }
   $('qrInfo').innerHTML=`<h3>${os.id} • ${os.cliente}</h3>
     <p><b>Status:</b> ${statusBadge(os)}</p>
     <p><b>Líder:</b> ${nomeUsuario(os.responsavel)}</p>
     <p><b>Prazo:</b> ${safeDateOnlyBR(os.dataLimite)}</p>
     <p><b>Tempo líder:</b> ${fmtSec(calcElapsed(os))}</p>
-    <p><b>Conteúdo do código:</b><br><code>${payload}</code></p>
-    <p class="hint">Observação: esta versão local gera um QR visual/determinístico para identificação interna. Quando o sistema estiver online, ele pode apontar diretamente para o link real da OS.</p>`;
+    <div class="qr-link-box"><b>Link real da OS:</b><br><code>${link}</code></div>
+    <p class="hint">Ao escanear, a pessoa será direcionada para o sistema online. Se não estiver logada, fará login primeiro e depois verá a OS.</p>`;
 }
+
 function baixarQRCode(){
   if(!$('qrCanvas')) return;
   let a=document.createElement('a');
@@ -4327,6 +4494,12 @@ function baixarQRCode(){
   a.download=`qr-code-${id}.png`;
   a.href=$('qrCanvas').toDataURL('image/png');
   a.click();
+}
+function copiarLinkQRCode(){
+  const id=($('qrSelect')||{}).value;
+  if(!id){alert('Selecione uma OS primeiro.');return;}
+  const link=getOSLink(id);
+  navigator.clipboard?.writeText(link).then(()=>alert('Link da OS copiado!')).catch(()=>prompt('Copie o link:',link));
 }
 setInterval(()=>{
   if(currentUser){
